@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="data">
+      <UniqueIdentifier>{d380ff52-a49b-4068-a4a0-ce90a89fdfd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BMPlibrary">
+      <UniqueIdentifier>{0e5c1e83-ee0f-492c-a1c9-a2ec17b933d2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EasyBMP.cpp">
+      <Filter>BMPlibrary</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EasyBMP.h">
+      <Filter>BMPlibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyBMP_BMP.h">
+      <Filter>BMPlibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyBMP_DataStructures.h">
+      <Filter>BMPlibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyBMP_VariousBMPutilities.h">
+      <Filter>BMPlibrary</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="background.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="background.bmp">
+      <Filter>data</Filter>
+    </Image>
+    <Image Include="image.bmp">
+      <Filter>data</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
