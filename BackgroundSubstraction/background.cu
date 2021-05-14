@@ -89,19 +89,37 @@ void CPUBackground(unsigned char *outputimage, unsigned char *inputb, unsigned c
 
 
 // CUDA kernel background
-__global__ void GPUBackground(unsigned char *d_output, unsigned char *d_inputb, unsigned char *d_inputf, int width, int threshold)
-{
+__global__ void GPUBackground(unsigned char *d_output, unsigned char *d_inputb, unsigned char *d_inputf, int width, int height, int threshold)
+{	
+	//Calculo de los indices sobre el array de pixeles de la imagen
+	const int x_index = blockIdx.x * blockDim.x + threadIdx.x;
+	const int y_index = blockIdx.y * blockDim.y + threadIdx.y;
+	const int index = y_index*width + x_index;
 
 	/*
-	* Calculamos la fila y columna global para este hilo
+	//Comprobar que el pixel esta en la imagen
+	//(Puede salirse debido a que hay un bloque que puede no estar utilizado completamente)
+	if (x_index>=height || y_index>=width)
+		return;
 	*/
-	// TO DO
 
+	//La celda a aplicar el filtro sera 3x3
+	const int filter_dim = 3;
+	const int filter_offset_x = filter_dim/2;
+	const int filter_offset_y = filter_dim/2;
 
-	// Realizar la substracción para el pixel correspondiente a este hilo 
-	// TO DO
+	int filter_sum = 0;
+	for (int i=-filter_offset_x; i<=filter_offset_x; i++)
+		for (int j=-filter_offset_y; j<=filter_offset_y; j++)
+			filter_sum += d_inputf[index + (j*width + i)];
 
+	const int mean = filter_sum/(filter_dim*filter_dim);
+	const int result = abs(mean - d_inputb[index]);
 
+	if (result > threshold)
+		d_output[index] = 255;
+	else
+		d_output[index] = 0;
 }
 
 /***********************************************************************************/
@@ -184,9 +202,18 @@ int main(int argc, char *argv[])
 	/***********************************************************/
 	// Ejecutar background en la GPU
 	/* Ejecución kernel  */
-	// TO DO - Calcular tamaño de bloque y grid para la correcta ejecucion del kernel
-	// TO DO - Ejecutar el kernel
 
+	//GPUs actuales soportan 1024(=32*32) threads por bloque
+	dim3 block_size(32, 32);
+
+	/*Numero de bloques teniendo en cuenta el numero de threads por bloque
+	(Puede no ser un multiplo exacto, por ello utilizamos uno de mas)*/
+	dim3 grid_size;
+	grid_size.x = (WIDTH / block_size.x) + 1;
+	grid_size.y = (HEIGHT / block_size.y) + 1;
+
+	//Llamamos a la gpu para que trabaje cada pixel por separado de forma paralela asincronamente
+	GPUBackground <<<grid_size, block_size >>> (d_output, d_inputb, d_inputf, WIDTH, HEIGHT, Threshold);
 
 	// Copiamos de la memoria de la GPU 
 	cudaMemcpy(gpu_output, d_output, memSize, cudaMemcpyDeviceToHost);
